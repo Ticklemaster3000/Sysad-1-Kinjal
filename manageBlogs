@@ -1,0 +1,91 @@
+#!/usr/bin/bash
+
+if [[ $# -ne 2 ]]; then
+	echo -e "command -p <filename>: Publish an article (ask for category preferences(e.g., 2,1 for Cinema and Sports), it should be reflected in public directory, update the YAML with the changes, and change permissions for users to view it).\n
+command -a <filename>: Archive an article (remove symlink from public, revoke permissions, update YAML).\n
+command -d <filename>: Delete an article (remove every trace of the article deleted)\n
+command -e <filename>: Edit an article's categories (interactive menu to select new category order, update YAML)."
+	exit 1
+fi
+
+flag=$1
+filename=$(realpath "$2")
+
+askpref(){
+	categories=("Sports" "Cinema" "Technology" "Travel" "Food" "Lifestyle" "Finance")
+	order=()
+	while [[ ${#categories[@]} -gt ${#order[@]}  ]]; do
+		echo -e "\nChoose a Category"
+		counter=1
+		for i in "${categories[@]}"; do
+			echo $counter\) $i
+			counter=$((counter + 1))
+		done;
+		echo -e "8) Reset\n0)Submit"
+		echo "current order: ${order[*]}"
+		read input
+		counter=$(($counter - 1))
+		
+		if [[ " ${order[*]} " =~ " $input " ]]; then
+			echo -e "already chosen\n"
+			continue
+		fi
+
+		if [[ "$input" =~ ^[1-$counter]$ ]]; then
+			order+=("$input")
+		elif [[ "$input" == "8" ]]; then
+			categories=("Sports" "Cinema" "Technology" "Travel" "Food" "Lifestyle" "Finance")
+			order=()
+		elif [[ "$input" == "0" ]]; then
+			order=$(IFS=, ; echo "${order[*]}")
+			break
+		else
+			echo "wrong input try again"
+		fi
+	done;
+}
+	
+if [[ $flag == "-p" ]]; then
+	if [[ -e $filename ]]; then
+	        askpref
+	        touch /home/authors/$USER/blogs.yaml
+		chown $USER /home/authors/$USER/blogs.yaml
+		sudo ln -s "$filename" "/home/authors/$USER/public/$(basename "$filename")"
+		sudo setfacl -m g:g_user:r-x "$filename"
+		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"']}]' /home/authors/$USER/blogs.yaml
+		echo Document published
+	else
+		echo file does not exist
+	fi
+elif [[ $flag == "-a" ]]; then
+	if [[ -e $filename && -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
+                rm "/home/authors/$USER/public/$(basename "$filename")"
+		sudo setfacl -x g:g_user "$filename"
+		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /home/authors/$USER/blogs.yaml
+		echo Document archived
+	else
+                echo file does not exist or is not published
+        fi
+elif [[ $flag == "-d" ]]; then
+	if [[ -e $filename ]]; then
+		rm $filename
+		symlink="/home/authors/$USER/public/$(basename "$filename")"
+		if [[ -L "$symlink" ]]; then
+			rm "/home/authors/$USER/public/$(basename "$filename")"
+		fi
+		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' /home/authors/$USER/blogs.yaml
+		echo Document deleted
+	else
+		echo file does not exist
+	fi
+elif [[ $flag == "-e" ]]; then
+	if [[ -e $filename && -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
+		askpref
+		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).cat_order= ['"$order"']' /home/authors/$USER/blogs.yaml
+	else
+		echo file does not exist or is not published
+	fi
+else
+	echo wrong input please try again
+fi
+
