@@ -1,0 +1,58 @@
+#!/usr/bin/bash
+
+IFS=\n readarray authors <<< $(ls -1 "/home/mods/$USER/author")
+IFS=\n readarray blacklist < /home/mods/$USER/blacklist.txt
+
+censor(){ # $1=filename $2=authorname
+	censored=""
+	count=0
+	linecount=0
+	while read -r line; do
+		lowerline="${line,,}"
+		censoredline=$(printf '%*s' "${#lowerline}" '')
+		for word in "${blacklist[@]}"; do
+			word=$(xargs <<< $word)
+			for (( i=0; i<=${#line}-${#word}; i++ )); do
+				substring="${line:i:${#word}}"
+				if [[ "$substring" == "$word" ]]; then
+					for (( j=0; j <${#word}; j++ )); do
+						censoredline="${censoredline:0:i+j}*${censoredline:i+j+1}"
+					done;
+					count=$((count+1))
+					echo Found blacklisted word "$word" in "$1" at line "$(($linecount + 1))"
+				fi
+			done;
+		done;
+		outputline=""
+		for (( i=0; i<${#censoredline}; i++ )); do
+			if [[ ${censoredline:i:1} == "*" ]]; then
+				outputline+="*"
+			else
+				outputline+="${line:i:1}"
+			fi
+		done;
+		censored+="$outputline\n"
+		linecount=$((linecount+1))
+	done < "/home/authors/$2/blogs/$1"
+	
+	echo -e "$censored" > "/home/authors/$2/blogs/$1"
+	if [[ $count -gt 5 ]]; then
+		rm "/home/authors/$2/public/$1"
+                sudo setfacl -m g:g_user:--x "/home/authors/$2/blogs/$1"
+                sudo setfacl -m g:g_mod:--x "/home/authors/$2/blogs/$1"
+		sudo yq -i '(.blogs[] | select(.file_name == "/home/authors/'"$2"'/blogs/'"$1"'")).publish_status= false' /home/authors/ananya/blogs.yaml
+		sudo yq -i '(.blogs[] | select(.file_name == "/home/authors/'"$2"'/blogs/'"$1"'")).mod_comments= "found '"$count"' blacklisted words"' /home/authors/ananya/blogs.yaml
+		echo "$1" archived due to excessive blacklisted words \("$count"\)
+	fi
+}
+
+for author in "${authors[@]}"; do
+        author=$(xargs <<< $author)
+        IFS=\n readarray blogs <<< $(ls -1 "/home/mods/$USER/author/$author")
+        for blog in "${blogs[@]}"; do
+                blog=$(xargs <<< $blog)
+		if [[ -f "/home/authors/$author/blogs/$blog" ]]; then
+			censor $blog $author
+		fi
+	done;
+done;
