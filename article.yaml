@@ -1,0 +1,601 @@
+blogs:
+  - file_name: /home/authors/ananya/blogs/random1-ananya.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 7
+      - 4
+    author: ananya
+    read_count: 0
+  - file_name: /home/authors/ananya/blogs/random2-ananya.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 3
+      - 3
+    author: ananya
+    read_count: 0
+  - file_name: /home/authors/ananya/blogs/random3-ananya.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 5
+      - 3
+    author: ananya
+    read_count: 0
+  - file_name: /home/authors/bala/blogs/random1-bala.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 3
+      - 7
+    author: bala
+    read_count: 0
+  - file_name: /home/authors/bala/blogs/random2-bala.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 2
+      - 3
+    author: bala
+    read_count: 0
+  - file_name: /home/authors/bala/blogs/random3-bala.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 1
+      - 6
+    author: bala
+    read_count: 0
+  - file_name: /home/authors/chitra/blogs/random1-chitra.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 4
+      - 4
+    author: chitra
+    read_count: 0
+  - file_name: /home/authors/chitra/blogs/random2-chitra.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 6
+      - 4
+    author: chitra
+    read_count: 0
+  - file_name: /home/authors/chitra/blogs/random3-chitra.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 3
+      - 1
+    author: chitra
+    read_count: 0
+  - file_name: /home/authors/dinesh/blogs/random1-dinesh.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 3
+      - 5
+    author: dinesh
+    read_count: 0
+  - file_name: /home/authors/dinesh/blogs/random2-dinesh.txt
+    publish_status: true
+    cat_order:
+      - 2
+      - 4
+      - 5
+    author: dinesh
+    read_count: 0
+  - file_name: /home/authors/dinesh/blogs/random3-dinesh.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 6
+      - 3
+    author: dinesh
+    read_count: 0
+  - file_name: /home/authors/esha/blogs/random1-esha.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 5
+      - 5
+    author: esha
+    read_count: 0
+  - file_name: /home/authors/esha/blogs/random2-esha.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 2
+      - 7
+    author: esha
+    read_count: 0
+  - file_name: /home/authors/esha/blogs/random3-esha.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 1
+      - 5
+    author: esha
+    read_count: 0
+  - file_name: /home/authors/firoz/blogs/random1-firoz.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 1
+      - 3
+    author: firoz
+    read_count: 0
+  - file_name: /home/authors/firoz/blogs/random2-firoz.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 7
+      - 2
+    author: firoz
+    read_count: 0
+  - file_name: /home/authors/firoz/blogs/random3-firoz.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 3
+      - 6
+    author: firoz
+    read_count: 0
+  - file_name: /home/authors/gayathri/blogs/random1-gayathri.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 3
+      - 6
+    author: gayathri
+    read_count: 0
+  - file_name: /home/authors/gayathri/blogs/random2-gayathri.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 7
+      - 3
+    author: gayathri
+    read_count: 0
+  - file_name: /home/authors/gayathri/blogs/random3-gayathri.txt
+    publish_status: true
+    cat_order:
+      - 2
+      - 1
+      - 4
+    author: gayathri
+    read_count: 0
+  - file_name: /home/authors/harsha/blogs/random1-harsha.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 5
+      - 3
+    author: harsha
+    read_count: 0
+  - file_name: /home/authors/harsha/blogs/random2-harsha.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 2
+      - 2
+    author: harsha
+    read_count: 0
+  - file_name: /home/authors/harsha/blogs/random3-harsha.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 2
+      - 6
+    author: harsha
+    read_count: 0
+  - file_name: /home/authors/imran/blogs/random1-imran.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 4
+      - 4
+    author: imran
+    read_count: 0
+  - file_name: /home/authors/imran/blogs/random2-imran.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 1
+      - 1
+    author: imran
+    read_count: 0
+  - file_name: /home/authors/imran/blogs/random3-imran.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 4
+      - 1
+    author: imran
+    read_count: 0
+  - file_name: /home/authors/jaya/blogs/random1-jaya.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 4
+      - 5
+    author: jaya
+    read_count: 0
+  - file_name: /home/authors/jaya/blogs/random2-jaya.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 6
+      - 5
+    author: jaya
+    read_count: 0
+  - file_name: /home/authors/jaya/blogs/random3-jaya.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 6
+      - 6
+    author: jaya
+    read_count: 0
+  - file_name: /home/authors/kiran/blogs/random1-kiran.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 5
+      - 5
+    author: kiran
+    read_count: 0
+  - file_name: /home/authors/kiran/blogs/random2-kiran.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 5
+      - 3
+    author: kiran
+    read_count: 0
+  - file_name: /home/authors/kiran/blogs/random3-kiran.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 1
+      - 2
+    author: kiran
+    read_count: 0
+  - file_name: /home/authors/lalitha/blogs/random1-lalitha.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 6
+      - 4
+    author: lalitha
+    read_count: 0
+  - file_name: /home/authors/lalitha/blogs/random2-lalitha.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 3
+      - 1
+    author: lalitha
+    read_count: 0
+  - file_name: /home/authors/lalitha/blogs/random3-lalitha.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 6
+      - 1
+    author: lalitha
+    read_count: 0
+  - file_name: /home/authors/mohan/blogs/random1-mohan.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 6
+      - 4
+    author: mohan
+    read_count: 0
+  - file_name: /home/authors/mohan/blogs/random2-mohan.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 4
+      - 7
+    author: mohan
+    read_count: 0
+  - file_name: /home/authors/mohan/blogs/random3-mohan.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 3
+      - 5
+    author: mohan
+    read_count: 0
+  - file_name: /home/authors/nandini/blogs/random1-nandini.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 5
+      - 4
+    author: nandini
+    read_count: 0
+  - file_name: /home/authors/nandini/blogs/random2-nandini.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 3
+      - 7
+    author: nandini
+    read_count: 0
+  - file_name: /home/authors/nandini/blogs/random3-nandini.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 4
+      - 3
+    author: nandini
+    read_count: 0
+  - file_name: /home/authors/omkar/blogs/random1-omkar.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 6
+      - 5
+    author: omkar
+    read_count: 0
+  - file_name: /home/authors/omkar/blogs/random2-omkar.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 3
+      - 7
+    author: omkar
+    read_count: 0
+  - file_name: /home/authors/omkar/blogs/random3-omkar.txt
+    publish_status: true
+    cat_order:
+      - 2
+      - 7
+      - 4
+    author: omkar
+    read_count: 0
+  - file_name: /home/authors/priya/blogs/random1-priya.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 5
+      - 4
+    author: priya
+    read_count: 0
+  - file_name: /home/authors/priya/blogs/random2-priya.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 7
+      - 5
+    author: priya
+    read_count: 0
+  - file_name: /home/authors/priya/blogs/random3-priya.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 1
+      - 3
+    author: priya
+    read_count: 0
+  - file_name: /home/authors/quincy/blogs/random1-quincy.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 2
+      - 6
+    author: quincy
+    read_count: 0
+  - file_name: /home/authors/quincy/blogs/random2-quincy.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 1
+      - 5
+    author: quincy
+    read_count: 0
+  - file_name: /home/authors/quincy/blogs/random3-quincy.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 6
+      - 2
+    author: quincy
+    read_count: 0
+  - file_name: /home/authors/raghu/blogs/random1-raghu.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 1
+      - 4
+    author: raghu
+    read_count: 0
+  - file_name: /home/authors/raghu/blogs/random2-raghu.txt
+    publish_status: true
+    cat_order:
+      - 2
+      - 5
+      - 7
+    author: raghu
+    read_count: 0
+  - file_name: /home/authors/raghu/blogs/random3-raghu.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 4
+      - 1
+    author: raghu
+    read_count: 0
+  - file_name: /home/authors/sneha/blogs/random1-sneha.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 4
+      - 5
+    author: sneha
+    read_count: 0
+  - file_name: /home/authors/sneha/blogs/random2-sneha.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 7
+      - 1
+    author: sneha
+    read_count: 0
+  - file_name: /home/authors/sneha/blogs/random3-sneha.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 7
+      - 3
+    author: sneha
+    read_count: 0
+  - file_name: /home/authors/tanvi/blogs/random1-tanvi.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 1
+      - 5
+    author: tanvi
+    read_count: 0
+  - file_name: /home/authors/tanvi/blogs/random2-tanvi.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 6
+      - 2
+    author: tanvi
+    read_count: 0
+  - file_name: /home/authors/tanvi/blogs/random3-tanvi.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 4
+      - 7
+    author: tanvi
+    read_count: 0
+  - file_name: /home/authors/usha/blogs/random1-usha.txt
+    publish_status: true
+    cat_order:
+      - 7
+      - 1
+      - 6
+    author: usha
+    read_count: 0
+  - file_name: /home/authors/usha/blogs/random2-usha.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 4
+      - 2
+    author: usha
+    read_count: 0
+  - file_name: /home/authors/usha/blogs/random3-usha.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 3
+      - 3
+    author: usha
+    read_count: 0
+  - file_name: /home/authors/vignesh/blogs/random1-vignesh.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 7
+      - 5
+    author: vignesh
+    read_count: 0
+  - file_name: /home/authors/vignesh/blogs/random2-vignesh.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 5
+      - 2
+    author: vignesh
+    read_count: 0
+  - file_name: /home/authors/vignesh/blogs/random3-vignesh.txt
+    publish_status: true
+    cat_order:
+      - 1
+      - 3
+      - 3
+    author: vignesh
+    read_count: 0
+  - file_name: /home/authors/waseem/blogs/random1-waseem.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 7
+      - 4
+    author: waseem
+    read_count: 0
+  - file_name: /home/authors/waseem/blogs/random2-waseem.txt
+    publish_status: true
+    cat_order:
+      - 2
+      - 2
+      - 2
+    author: waseem
+    read_count: 0
+  - file_name: /home/authors/waseem/blogs/random3-waseem.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 2
+      - 3
+    author: waseem
+    read_count: 0
+  - file_name: /home/authors/yamini/blogs/random1-yamini.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 2
+      - 7
+    author: yamini
+    read_count: 0
+  - file_name: /home/authors/yamini/blogs/random2-yamini.txt
+    publish_status: true
+    cat_order:
+      - 3
+      - 3
+      - 6
+    author: yamini
+    read_count: 0
+  - file_name: /home/authors/yamini/blogs/random3-yamini.txt
+    publish_status: true
+    cat_order:
+      - 4
+      - 5
+      - 5
+    author: yamini
+    read_count: 0
+  - file_name: /home/authors/zubin/blogs/random1-zubin.txt
+    publish_status: true
+    cat_order:
+      - 5
+      - 2
+      - 7
+    author: zubin
+    read_count: 0
+  - file_name: /home/authors/zubin/blogs/random2-zubin.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 4
+      - 1
+    author: zubin
+    read_count: 0
+  - file_name: /home/authors/zubin/blogs/random3-zubin.txt
+    publish_status: true
+    cat_order:
+      - 6
+      - 5
+      - 7
+    author: zubin
+    read_count: 0

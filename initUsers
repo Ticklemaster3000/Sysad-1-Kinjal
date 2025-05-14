@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-yamlloc="/scripts/sysad-1-users.yaml"
+yamlloc="/scripts/Sysad-1-users.yaml"
 readarray adminarray <<< $(yq ".admins[].username" "$yamlloc") 
 readarray authorarray <<< $(yq ".authors[].username" "$yamlloc")
 readarray modarray <<< $(yq ".mods[].username" "$yamlloc")
@@ -45,11 +45,13 @@ echo -e "\nStage 2.3: creating users and creating directories"
 sudo mkdir "/home/users" > /dev/null 2>&1
 for user in "${userarray[@]}"; do
 	user=$(xargs <<< "$user")
-	sudo mkdir "/home/users/$user" "/home/users/$user/all_blogs" > /dev/null 2>&1
+	sudo mkdir "/home/users/$user" "/home/users/$user/all_blogs" "/home/users/$user/ForYou" > /dev/null 2>&1
 	sudo useradd -g g_user -d "/home/users/$user" "$user" > /dev/null 2>&1 && sudo chpasswd <<< "$user:pass1234" > /dev/null 2>&1
 	for author in "${authorarray[@]}"; do
 		author=$(xargs <<< "$author")
-		sudo ln -s "/home/authors/$author/public" "/home/users/$user/all_blogs/$author" > /dev/null 2>&1
+		if [[ ! -L "/home/users/$user/all_blogs/$author" ]]; then
+			sudo ln -s "/home/authors/$author/public" "/home/users/$user/all_blogs/$author" > /dev/null 2>&1
+		fi
 	done;
 	sudo chown -R "$user" "/home/users/$user"
 	sudo chown -R :g_admin "/home/users/$user"
@@ -65,12 +67,15 @@ for mod in "${modarray[@]}"; do
 	mod=$(xargs <<< "$mod")
 	sudo mkdir "/home/mods/$mod" "/home/mods/$mod/author" > /dev/null 2>&1
 	readarray assignedauth <<< $(yq ".mods[$counter].authors[]" "$yamlloc")
-
+	
+	touch "/home/mods/$mod/blacklist.txt"
 	sudo useradd -g g_mod -d "/home/mods/$mod" "$mod" > /dev/null 2>&1 && sudo chpasswd <<< "$mod:pass1234" > /dev/null 2>&1
 
 	for author in "${assignedauth[@]}"; do
 		author=$(xargs <<< "$author")
-		sudo ln -s "/home/authors/$author/public" "/home/mods/$mod/author/$author" > /dev/null 2>&1
+		if [[ ! -L "/home/mods/$mod/author/$author" ]]; then
+			sudo ln -s "/home/authors/$author/public" "/home/mods/$mod/author/$author" > /dev/null 2>&1
+		fi
 		sudo setfacl -m u:$mod:rwx "/home/authors/$author/public"
 		sudo setfacl -m u:$mod:--x "/home/authors/$author"
 	done;

@@ -46,21 +46,28 @@ askpref(){
 }
 	
 if [[ $flag == "-p" ]]; then
-	if [[ -e $filename ]]; then
+	if [[ -e $filename && ! -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
 	        askpref
 	        touch /home/authors/$USER/blogs.yaml
 		chown $USER /home/authors/$USER/blogs.yaml
 		sudo ln -s "$filename" "/home/authors/$USER/public/$(basename "$filename")"
 		sudo setfacl -m g:g_user:r-x "$filename"
-		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"']}]' /home/authors/$USER/blogs.yaml
+		sudo setfacl -m g:g_user:--x "/home/authors/$USER/blogs"
+		sudo setfacl -m g:g_user:--x "/home/authors/$USER"
+		sudo setfacl -m g:g_mod:rwx "$filename"
+		sudo setfacl -m g:g_mod:--x "/home/authors/$USER"
+		sudo setfacl -m g:g_mod:--x "/home/authors/$USER/blogs"
+		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "mod_comments": ""}]' /home/authors/$USER/blogs.yaml
 		echo Document published
+		sudo yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "author": "'"$USER"'", "read_count": 0}]' /scripts/article.yaml
 	else
-		echo file does not exist
+		echo file does not exist or is already published
 	fi
 elif [[ $flag == "-a" ]]; then
 	if [[ -e $filename && -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
                 rm "/home/authors/$USER/public/$(basename "$filename")"
-		sudo setfacl -x g:g_user "$filename"
+		sudo setfacl -m g:g_user:--x "$filename"
+                sudo setfacl -m g:g_mod:--x "$filename"
 		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /home/authors/$USER/blogs.yaml
 		echo Document archived
 	else
@@ -74,6 +81,7 @@ elif [[ $flag == "-d" ]]; then
 			rm "/home/authors/$USER/public/$(basename "$filename")"
 		fi
 		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' /home/authors/$USER/blogs.yaml
+		sudo yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /scripts/article.yaml
 		echo Document deleted
 	else
 		echo file does not exist
