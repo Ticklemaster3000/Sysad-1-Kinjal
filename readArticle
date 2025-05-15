@@ -2,20 +2,24 @@
 
 if [[ $# -ne 1 ]]; then
 	echo readArticle [path]: path can be relative from all_blogs folder of user or absolute path
+	exit 1
+fi
+
+if [[ "$EUID" -ne 0 ]]; then
+	exec sudo "$0" "$1"
 fi
 
 real=$(realpath $1)
 
 if [[ -e $1 ]]; then
-	current_count=$(sudo yq '(.blogs[] | select(.file_name == "'"$real"'")).read_count' /scripts/article.yaml)
-
-	if [[ $1 =~ [^/] && $PWD =~ ^/home/users/[^/]+/all_blogs/[^/]+$ ]]; then
-		sudo yq -i '(.blogs[] | select(.file_name == "'"$real"'")).read_count= '"$(($current_count+1))" /scripts/article.yaml
+	current_count=$(yq '(.blogs[] | select(.file_name == "'"$real"'")).read_count' /scripts/article.yaml)
+	if [[ $1 =~ [^/] && $PWD =~ ^/home/authors/[^/]+/public+$ ]]; then
+		yq -i '(.blogs[] | select(.file_name == "'"$real"'")).read_count= '"$(($current_count+1))" /scripts/article.yaml
 		echo ========== READING ARTICLE ==========
 		echo
 		cat $real
-	elif [[ $1 =~ ^/home/users/[^/]+/all_blogs/[^/]+/[^/]+$ ]]; then
-		sudo yq -i '(.blogs[] | select(.file_name == "'"$real"'")).read_count= '"$(($current_count+1))" /scripts/article.yaml
+	elif [[ $1 =~ ^/home/authors/[^/]+/public+$ ]]; then
+		yq -i '(.blogs[] | select(.file_name == "'"$real"'")).read_count= '"$(($current_count+1))" /scripts/article.yaml
 		echo ========== READING ARTICLE ==========
 		echo
 		cat $real

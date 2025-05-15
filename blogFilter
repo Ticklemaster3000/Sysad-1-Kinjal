@@ -1,7 +1,11 @@
 #!/usr/bin/bash
 
-IFS=\n readarray authors <<< $(ls -1 "/home/mods/$USER/author")
-IFS=\n readarray blacklist < /home/mods/$USER/blacklist.txt
+if [[ "$EUID" -ne 0 ]]; then
+	exec sudo "$0"
+fi
+
+IFS=\n readarray authors <<< $(ls -1 "/home/mods/$SUDO_USER/author")
+IFS=\n readarray blacklist < /home/mods/$SUDO_USER/blacklist.txt
 
 censor(){ # $1=filename $2=authorname
 	censored=""
@@ -48,7 +52,7 @@ censor(){ # $1=filename $2=authorname
 
 for author in "${authors[@]}"; do
         author=$(xargs <<< $author)
-        IFS=\n readarray blogs <<< $(ls -1 "/home/mods/$USER/author/$author")
+        IFS=\n readarray blogs <<< $(ls -1 "/home/mods/$SUDO_USER/author/$author")
         for blog in "${blogs[@]}"; do
                 blog=$(xargs <<< $blog)
 		if [[ -f "/home/authors/$author/blogs/$blog" ]]; then

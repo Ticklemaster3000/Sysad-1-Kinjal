@@ -15,6 +15,9 @@
 # iterate through the users and assign score to each user-article pair simmilar to before
 # assign article to top remaining articles
 
+if [[ "$UEID" -ne 0 ]]; then
+	exec sudo "$0"
+fi
 
 prefFile="/scripts/userpref.yaml"
 
@@ -23,25 +26,26 @@ author_list=()
 article_list=()
 article_cat=()
 article_count=0
-article_usage=()
 
 readarray authorlist <<< $(ls -1 "/home/authors")
 for author in "${authorlist[@]}"; do
 	author=$(xargs <<< $author)
 	author_list+=($author)
-	readarray buffer <<< $(sudo ls -1 "/home/authors/$author/public")
+	readarray buffer <<< $(ls -1 "/home/authors/$author/public")
 	for article in "${buffer[@]}"; do
 		article=$(xargs <<< $article)
-		article_list+=("/home/authors/$author/public/$article")
-		article_buffer=($(sudo yq '(.blogs[] | select(.file_name == "'"/home/authors/$author/blogs/$article"'")).cat_order[]' "/home/authors/$author/blogs.yaml"))
-		article_buffer=$(IFS=,;echo "${article_buffer[*]}")
-		article_cat+=($article_buffer)
-		article_count=$(($article_count+1))
-		article_usage+=(0)
+		if [[ "$article" != "" ]]; then
+			article_list+=("/home/authors/$author/public/$article")
+			article_buffer=($(yq '(.blogs[] | select(.file_name == "'"/home/authors/$author/blogs/$article"'")).cat_order[]' "/home/authors/$author/blogs.yaml"))
+			article_buffer=$(IFS=,;echo "${article_buffer[*]}")
+			article_cat+=($article_buffer)
+			article_count=$(($article_count+1))
+		fi
 	done;
 done;
 
-echo Phase 2: retrieving user information
+
+echo Phase 2: retrieving user information and reseting FYP
 user_list=()
 user_blog_count=()
 user_pref=()
@@ -54,11 +58,12 @@ for user in "${userlist[@]}"; do
 	user_list+=($user)
 	user_blog_count+=(0)
 	buffer=()
-	readarray fyp <<< $(sudo ls -1 "/home/users/$user/ForYou")
+	readarray fyp <<< $(ls -1 "/home/users/$user/ForYou")
 	for fy in "${fyp[@]}"; do
 		fy=$(xargs <<< $fy)
 		if [[ "$fy" != "" ]]; then 
-			sudo rm "/home/users/$user/ForYou/$fy" 
+			
+			rm "/home/users/$user/ForYou/$fy" 
 			count=$((count+1))
 		fi
 	done;
@@ -73,7 +78,9 @@ for user in "${userlist[@]}"; do
 	buffer=$(IFS=,;echo "${buffer[*]}")
 	user_pref+=($buffer)
 done;
+echo $count articles removed from existing FYP
 user_count=${#user_list[@]}
+count=0
 
 echo Phase 3: distributing articles minimum number of times
 for (( article=0; article<${#article_list[@]}; article++ )); do
@@ -127,12 +134,18 @@ for (( article=0; article<${#article_list[@]}; article++ )); do
 			fi
 		done;
 	done;
-
-	for (( i=0; i<$(($user_count * 3 / $article_count)); i++ )); do
-		if [[ ${user_blog_count[$i]} -lt 3 ]]; then 
-			sudo ln -s "${article_list[$article]}" "/home/users/${user_list[$i]}/ForYou/$(basename ${article_list[$article]})"
-			user_blog_count[$i]=$((${user_blog_count[$i]}+1))
+	
+	user=0
+	count=0
+	for (( i=0; i<$(($user_count * 3 / $article_count)) && $user<$user_count; i++ )); do
+		if [[ ${user_blog_count[$user]} -lt 3 ]]; then	
+			count=$(($count+1))
+			ln -s "${article_list[$article]}" "/home/users/${user_list[$user]}/ForYou/$(basename ${article_list[$article]})"
+			user_blog_count[$user]=$((${user_blog_count[$user]}+1))
+		else
+			i=$(($i-1))
 		fi
+		user=$(($user+1))
 	done;
 done;
 
@@ -181,21 +194,15 @@ for (( user=0; user<${#user_list[@]}; user++ )); do
                                 temp="${article_cat[j]}"
                                 article_cat[j]="${article_cat[j+1]}"
                                 article_cat[j+1]="$temp"
-                        
-				temp="${article_usage[j]}"
-				article_usage[j]="${article_usage[j+1]}"
-				article_usage[j+1]="$temp"
 			fi
                 done;
         done;
 	
 	article=0	
-        while [[ ${user_blog_count[$user]} -lt 3 ]]; do
-		echo "${article_usage[$article]}"
-		if [[ "${article_usage[$article]}" == "0" ]]; then
-			sudo ln -s "${article_list[$article]}" "/home/users/${user_list[$user]}/ForYou/$(basename "${article_list[$article]}")"
+        while [[ ${user_blog_count[$user]} -lt 3 && $article -lt $article_count ]]; do
+		if [[ ! -L "/home/users/${user_list[$user]}/ForYou/$(basename "${article_list[$article]}")" ]]; then
+			ln -s "${article_list[$article]}" "/home/users/${user_list[$user]}/ForYou/$(basename "${article_list[$article]}")"
 			user_blog_count[$user]=$((${user_blog_count[$user]}+1))
-        		article_usage[$article]=1
 		fi
 		article=$((article+1))
 	done;

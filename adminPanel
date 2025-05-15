@@ -1,6 +1,10 @@
 #!/usr/bin/bash
 
-filename="/scripts/$(date "+%d-%m-%Y")-report.txt"
+if [[ "$EUID" -ne 0 ]]; then
+	exec sudo "$0"
+fi
+
+filename="/home/admins/$SUDO_USER/$(date "+%d-%m-%Y")-report.txt"
 echo file saved at "$filename"
 
 exec > >(tee "$filename")
@@ -25,13 +29,13 @@ for blog in "${all_blogs[@]}"; do
 	stat=$(yq '(.blogs[] | select(.file_name == "'"$blog"'")).publish_status' /scripts/article.yaml)
 	readarray cat_order <<< $(yq '(.blogs[] | select(.file_name == "'"$blog"'")).cat_order[]' /scripts/article.yaml)
 	read_count=$(yq '(.blogs[] | select(.file_name == "'"$blog"'")).read_count' /scripts/article.yaml)
+	if [[ $read_count -ge $highest ]]; then
+		third=$second
+		second=$first
+		author=$(yq '(.blogs[] | select(.file_name == "'"$blog"'")).author' /scripts/article.yaml)
+		first=$(printf "%-20s | %-10s | %-10s | %-50s\n" "$(basename $blog)" "$author" "$read_count" "$blog")                   
+	fi
 	if [[ $stat == true ]]; then
-		if [[ $read_count -ge $highest ]]; then
-			third=$second
-			second=$first
-			author=$(yq '(.blogs[] | select(.file_name == "'"$blog"'")).author' /scripts/article.yaml)
-			first=$(printf "%-20s | %-10s | %-10s | %-50s\n" "$(basename $blog)" "$author" "$read_count" "$blog")			
-		fi
 		for cat in ${cat_order[@]}; do
 			cat_published[$(($cat-1))]=$((cat_published[$(($cat-1))]+1))
 		done;
@@ -41,7 +45,6 @@ for blog in "${all_blogs[@]}"; do
 			cat_deleted[$(($cat-1))]=$((cat_deleted[$(($cat-1))]+1))	
 		done;
 		total_deleted=$(($total_deleted+1))
-		echo done
 	fi
 done;
 
@@ -77,3 +80,6 @@ echo "RANK  | $(printf "%-20s | %-10s | %-10s | %-50s\n" "TITLE" "AUTHOR" "READ 
 echo "1     | $first"
 echo "2     | $second"
 echo "3     | $third"
+
+chown "$SUDO_USER" "$filename"
+chmod 770 "$filename"

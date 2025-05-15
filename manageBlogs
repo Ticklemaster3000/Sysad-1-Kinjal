@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+articleyaml="/scripts/article.yaml"
+
 if [[ $# -ne 2 ]]; then
 	echo -e "command -p <filename>: Publish an article (ask for category preferences(e.g., 2,1 for Cinema and Sports), it should be reflected in public directory, update the YAML with the changes, and change permissions for users to view it).\n
 command -a <filename>: Archive an article (remove symlink from public, revoke permissions, update YAML).\n
@@ -7,6 +9,12 @@ command -d <filename>: Delete an article (remove every trace of the article dele
 command -e <filename>: Edit an article's categories (interactive menu to select new category order, update YAML)."
 	exit 1
 fi
+
+if [[ "$EUID" -ne 0 ]]; then
+	exec sudo "$0" "$1" "$2"
+fi
+
+touch "$articleyaml"
 
 flag=$1
 filename=$(realpath "$2")
@@ -46,29 +54,38 @@ askpref(){
 }
 	
 if [[ $flag == "-p" ]]; then
-	if [[ -e $filename && ! -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
+	if [[ -e $filename && ! -L "/home/authors/$SUDO_USER/public/$(basename "$filename")" ]]; then
+		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' /home/authors/$SUDO_USER/blogs.yaml
+		read_count=$(yq '(.blogs[] | select(.file_name == "'"$filename"'")).read_count' "$articleyaml")
+		if [[ "$read_count" == "" ]]; then 
+			read_count=0 
+		fi
+		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' "$articleyaml"
 	        askpref
-	        touch /home/authors/$USER/blogs.yaml
-		chown $USER /home/authors/$USER/blogs.yaml
-		sudo ln -s "$filename" "/home/authors/$USER/public/$(basename "$filename")"
-		sudo setfacl -m g:g_user:r-x "$filename"
-		sudo setfacl -m g:g_user:--x "/home/authors/$USER/blogs"
-		sudo setfacl -m g:g_user:--x "/home/authors/$USER"
-		sudo setfacl -m g:g_mod:rwx "$filename"
-		sudo setfacl -m g:g_mod:--x "/home/authors/$USER"
-		sudo setfacl -m g:g_mod:--x "/home/authors/$USER/blogs"
-		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "mod_comments": ""}]' /home/authors/$USER/blogs.yaml
+	        touch /home/authors/$SUDO_USER/blogs.yaml
+		chown $SUDO_USER /home/authors/$SUDO_USER/blogs.yaml
+		ln -s "$filename" "/home/authors/$SUDO_USER/public/$(basename "$filename")"
+		
+		setfacl -m g:g_user:r-x "$filename"
+		setfacl -m g:g_user:--x "/home/authors/$SUDO_USER/blogs"
+		setfacl -m g:g_user:--x "/home/authors/$SUDO_USER"
+		
+		setfacl -m g:g_mod:rwx "$filename"
+		setfacl -m g:g_mod:--x "/home/authors/$SUDO_USER"
+		setfacl -m g:g_mod:--x "/home/authors/$SUDO_USER/blogs"
+		
+		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "mod_comments": ""}]' /home/authors/$SUDO_USER/blogs.yaml
 		echo Document published
-		sudo yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "author": "'"$USER"'", "read_count": 0}]' /scripts/article.yaml
+		yq -i '.blogs += [{"file_name": "'"$filename"'", "publish_status": true, "cat_order": ['"$order"'], "author": "'"$SUDO_USER"'", "read_count": '"$read_count"'}]' "$articleyaml"
 	else
 		echo file does not exist or is already published
 	fi
 elif [[ $flag == "-a" ]]; then
-	if [[ -e $filename && -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
-                rm "/home/authors/$USER/public/$(basename "$filename")"
-		sudo setfacl -m g:g_user:--x "$filename"
-                sudo setfacl -m g:g_mod:--x "$filename"
-		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /home/authors/$USER/blogs.yaml
+	if [[ -e $filename && -L "/home/authors/$SUDO_USER/public/$(basename "$filename")" ]]; then
+                rm "/home/authors/$SUDO_USER/public/$(basename "$filename")"
+		setfacl -m g:g_user:--x "$filename"
+                setfacl -m g:g_mod:--x "$filename"
+		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /home/authors/$SUDO_USER/blogs.yaml
 		echo Document archived
 	else
                 echo file does not exist or is not published
@@ -76,20 +93,20 @@ elif [[ $flag == "-a" ]]; then
 elif [[ $flag == "-d" ]]; then
 	if [[ -e $filename ]]; then
 		rm $filename
-		symlink="/home/authors/$USER/public/$(basename "$filename")"
+		symlink="/home/authors/$SUDO_USER/public/$(basename "$filename")"
 		if [[ -L "$symlink" ]]; then
-			rm "/home/authors/$USER/public/$(basename "$filename")"
+			rm "/home/authors/$SUDO_USER/public/$(basename "$filename")"
 		fi
-		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' /home/authors/$USER/blogs.yaml
-		sudo yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' /scripts/article.yaml
+		yq -i 'del(.blogs[] | select(.file_name == "'"$filename"'"))' /home/authors/$SUDO_USER/blogs.yaml
+		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).publish_status= false' "$articleyaml"
 		echo Document deleted
 	else
 		echo file does not exist
 	fi
 elif [[ $flag == "-e" ]]; then
-	if [[ -e $filename && -L "/home/authors/$USER/public/$(basename "$filename")" ]]; then
+	if [[ -e $filename && -L "/home/authors/$SUDO_USER/public/$(basename "$filename")" ]]; then
 		askpref
-		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).cat_order= ['"$order"']' /home/authors/$USER/blogs.yaml
+		yq -i '(.blogs[] | select(.file_name == "'"$filename"'")).cat_order= ['"$order"']' /home/authors/$SUDO_USER/blogs.yaml
 	else
 		echo file does not exist or is not published
 	fi

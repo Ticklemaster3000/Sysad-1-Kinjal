@@ -1,0 +1,55 @@
+#!/usr/bin/bash
+
+# creates the two admins which can run initUsers for further creation
+groups=("user" "admin" "author" "mod")
+for group in "${groups[@]}"; do
+        groupadd "g_$group" > /dev/null 2>&1
+done;
+
+mkdir "/home/admins" > /dev/null 2>&1
+for admin in "${adminarray[@]}"; do
+        admin=$(xargs <<< "$admin")
+        mkdir "/home/admins/$admin" > /dev/null 2>&1
+        useradd -g g_admin -d "/home/admins/$admin" "$admin" > /dev/null 2>&1 && chpasswd <<< "$admin:pass1234" > /dev/null 2>&1
+        chown -R "$admin" "/home/admins/$admin"
+        chmod -R 700 "/home/admins/$admin"
+        echo "done with $admin"
+done;
+
+# change permissions to restrict using commands
+chown :g_admin /scripts/adminPanel
+chmod 750 /scripts/adminPanel
+
+chown :g_mod /scripts/blogFilter
+chmod 750 /scripts/blogFilter
+
+chown :g_admin /scripts/initUsers
+chmod 750 /scripts/initUsers
+
+chown :g_author /scripts/manageBlogs
+chmod 750 /scripts/manageBlogs
+
+chown :g_user /scripts/readArticle
+chmod 750 /scripts/readArticle
+
+chown :g_admin /scripts/userFY
+chmod 750 /scripts/userFY
+
+touch /scripts/article.yaml
+chown root:g_admin /scripts/article.yaml
+chmod 640 /scripts/article.yaml
+
+chown root:g_admin /scripts/Sysad-1-users.yaml
+chmod 640 /scripts/Sysad-1-users.yaml
+
+chown root:g_admin /scripts/userpref.yaml
+chmod 640 /scripts/userpref.yaml
+
+# add cronjob for adminPanel
+(crontab -l 2>/dev/null; echo "14 15 1-7,24-31 2,5,8,11 4,6 /scripts/adminPanel") | crontab -
+
+# change sudo commands using sudo visudo to allow groups to use their respective commands
+echo '%g_admin ALL=(ALL) NOPASSWD: /scripts/initUsers, /scripts/userFY, /scripts/adminPane' | sudo EDITOR='tee -a' visudo
+echo '%g_author ALL=(ALL) NOPASSWD: /scripts/manageBlogs' | sudo EDITOR='tee -a' visudo
+echo '%g_mod ALL=(ALL) NOPASSWD: /scripts/blogFilter' | sudo EDITOR='tee -a' visudo
+echo '%g_user ALL=(ALL) NOPASSWD: /scripts/readArticle' | sudo EDITOR='tee -a' visudo

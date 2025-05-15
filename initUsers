@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+if [[ "$EUID" -ne 0 ]]; then
+	exec sudo "$0"
+fi
+
 yamlloc="/scripts/Sysad-1-users.yaml"
 readarray adminarray <<< $(yq ".admins[].username" "$yamlloc") 
 readarray authorarray <<< $(yq ".authors[].username" "$yamlloc")
@@ -9,78 +13,92 @@ readarray userarray <<< $(yq ".users[].username" "$yamlloc")
 echo -e "Stage 1: create groups"
 groups=("user" "admin" "author" "mod")
 for group in "${groups[@]}"; do
-	sudo groupadd "g_$group" > /dev/null 2>&1
+	groupadd "g_$group" > /dev/null 2>&1
 done;
 
 echo -e "done creating groups\n"
 echo "Stage 2.1: creating admins and assigning home directories"
 
-sudo mkdir "/home/admins" > /dev/null 2>&1
+mkdir "/home/admins" > /dev/null 2>&1
 for admin in "${adminarray[@]}"; do
 	admin=$(xargs <<< "$admin")
-	sudo mkdir "/home/admins/$admin" > /dev/null 2>&1
-	sudo useradd -g g_admin -d "/home/admins/$admin" "$admin" > /dev/null 2>&1 && sudo chpasswd <<< "$admin:pass1234" > /dev/null 2>&1
-	sudo chown -R "$admin" "/home/admins/$admin"
-	sudo chmod -R 700 "/home/admins/$admin"
+	mkdir "/home/admins/$admin" > /dev/null 2>&1
+	useradd -g g_admin -d "/home/admins/$admin" "$admin" > /dev/null 2>&1 && chpasswd <<< "$admin:pass1234" > /dev/null 2>&1
+	chown -R "$admin" "/home/admins/$admin"
+	chmod -R 700 "/home/admins/$admin"
 	echo "done with $admin"
 done;
 
 echo -e "\nStage 2.2: creating authors and creating directories"
 
-sudo mkdir "/home/authors" > /dev/null 2>&1
+mkdir "/home/authors" > /dev/null 2>&1
 for author in "${authorarray[@]}"; do
 	author=$(xargs <<< "$author")
-	sudo mkdir "/home/authors/$author" "/home/authors/$author/public" "/home/authors/$author/blogs" > /dev/null 2>&1
-	sudo useradd -g g_author -d "/home/authors/$author" "$author" > /dev/null 2>&1 && sudo chpasswd <<< "$author:pass1234" > /dev/null 2>&1
-	sudo chown -R "$author" "/home/authors/$author"
-	sudo chown -R :g_admin "/home/authors/$author"
-	sudo chmod -R 770 "/home/authors/$author"
-	sudo setfacl -m g:g_user:r-x "/home/authors/$author/public"
-	sudo setfacl -m g:g_user:--x "/home/authors/$author"
+	mkdir "/home/authors/$author" "/home/authors/$author/public" "/home/authors/$author/blogs" > /dev/null 2>&1
+	useradd -g g_author -d "/home/authors/$author" "$author" > /dev/null 2>&1 && chpasswd <<< "$author:pass1234" > /dev/null 2>&1
+
+	# set blogs.yaml ownership to admin and root so author cannot modify without manageBlogs
+	touch "/home/authors/$author/blogs.yaml"
+	chown root:g_admin "/home/authors/$author/blogs.yaml"
+	chmod 770 "/home/authors/$author/blogs.yaml"
+
+	# set owner and group of home directories as admin and root so author cannot delete directories
+	chown root:g_admin "/home/authors/$author"
+	chmod 770 "/home/authors/$author"
+	setfacl -m u:"$author":r-x "/home/authors/$author"
+	
+	# give full access to blogs but not to public directory: author has to use manageBlogs to publish/delete/archive blogs
+	chown "$author":g_admin "/home/authors/$author/public"
+	chown "$author":g_admin "/home/authors/$author/blogs"
+	chmod 570 "/home/authors/$author/public"
+	chmod 770 "/home/authors/$author/blogs"
+
+	setfacl -m g:g_user:r-x "/home/authors/$author/public"
+	setfacl -m g:g_user:--x "/home/authors/$author"
 	echo "done with $author"
 done;
 
 echo -e "\nStage 2.3: creating users and creating directories"
 
-sudo mkdir "/home/users" > /dev/null 2>&1
+mkdir "/home/users" > /dev/null 2>&1
 for user in "${userarray[@]}"; do
 	user=$(xargs <<< "$user")
-	sudo mkdir "/home/users/$user" "/home/users/$user/all_blogs" "/home/users/$user/ForYou" > /dev/null 2>&1
-	sudo useradd -g g_user -d "/home/users/$user" "$user" > /dev/null 2>&1 && sudo chpasswd <<< "$user:pass1234" > /dev/null 2>&1
+	mkdir "/home/users/$user" "/home/users/$user/all_blogs" "/home/users/$user/ForYou" > /dev/null 2>&1
+	useradd -g g_user -d "/home/users/$user" "$user" > /dev/null 2>&1 && chpasswd <<< "$user:pass1234" > /dev/null 2>&1
 	for author in "${authorarray[@]}"; do
 		author=$(xargs <<< "$author")
 		if [[ ! -L "/home/users/$user/all_blogs/$author" ]]; then
-			sudo ln -s "/home/authors/$author/public" "/home/users/$user/all_blogs/$author" > /dev/null 2>&1
+			ln -s "/home/authors/$author/public" "/home/users/$user/all_blogs/$author" > /dev/null 2>&1
 		fi
 	done;
-	sudo chown -R "$user" "/home/users/$user"
-	sudo chown -R :g_admin "/home/users/$user"
-	sudo chmod -R 770 "/home/users/$user"
+
+	chown -R "$user":g_admin "/home/users/$user"
+	chmod -R 570 "/home/users/$user"
 	echo "done with $user"
 done;
 
 echo -e "\nStage 2.4: creating mods and creating directories"
 
-sudo mkdir "/home/mods" > /dev/null 2>&1
+mkdir "/home/mods" > /dev/null 2>&1
 counter=0
 for mod in "${modarray[@]}"; do
 	mod=$(xargs <<< "$mod")
-	sudo mkdir "/home/mods/$mod" "/home/mods/$mod/author" > /dev/null 2>&1
+	mkdir "/home/mods/$mod" "/home/mods/$mod/author" > /dev/null 2>&1
 	readarray assignedauth <<< $(yq ".mods[$counter].authors[]" "$yamlloc")
 	
 	touch "/home/mods/$mod/blacklist.txt"
-	sudo useradd -g g_mod -d "/home/mods/$mod" "$mod" > /dev/null 2>&1 && sudo chpasswd <<< "$mod:pass1234" > /dev/null 2>&1
+	useradd -g g_mod -d "/home/mods/$mod" "$mod" > /dev/null 2>&1 && chpasswd <<< "$mod:pass1234" > /dev/null 2>&1
 
 	for author in "${assignedauth[@]}"; do
 		author=$(xargs <<< "$author")
 		if [[ ! -L "/home/mods/$mod/author/$author" ]]; then
-			sudo ln -s "/home/authors/$author/public" "/home/mods/$mod/author/$author" > /dev/null 2>&1
+			ln -s "/home/authors/$author/public" "/home/mods/$mod/author/$author" > /dev/null 2>&1
 		fi
-		sudo setfacl -m u:$mod:rwx "/home/authors/$author/public"
-		sudo setfacl -m u:$mod:--x "/home/authors/$author"
+		setfacl -m u:$mod:rwx "/home/authors/$author/public"
+		setfacl -m u:$mod:--x "/home/authors/$author"
 	done;
 	
-	IFS= readarray existingauth <<< $(sudo ls -1 "/home/mods/$mod/author")
+	IFS= readarray existingauth <<< $(ls -1 "/home/mods/$mod/author")
         for exauthor in "${existingauth[@]}"; do
                 exauthor=$(xargs <<< "$exauthor")
                 indicator=0
@@ -92,21 +110,24 @@ for mod in "${modarray[@]}"; do
                         fi
                 done;
                 if [[ $indicator -ne 1 ]]; then
-                        sudo setfacl -x u:$mod "/home/authors/$exauthor"
-                        sudo setfacl -x u:$mod "/home/authors/$exauthor/public"
-                        sudo rm "/home/mods/$mod/author/$exauthor"
+                        setfacl -x u:$mod "/home/authors/$exauthor"
+                        setfacl -x u:$mod "/home/authors/$exauthor/public"
+                        rm "/home/mods/$mod/author/$exauthor"
                 fi
         done;
 
-	sudo chown -R "$mod" "/home/mods/$mod"
-	sudo chown -R :g_admin "/home/mods/$mod"
-	sudo chmod -R 770 "/home/mods/$mod"
+	chown -R "$mod":g_admin "/home/mods/$mod"
+	chmod -R 570 "/home/mods/$mod/author"
+	chmod 770 "/home/mods/$mod"
+		
+	chmod 770 "/home/mods/$mod/blacklist.txt"
+
 	echo "done with $mod"
 	counter=$((counter + 1))
 done;
 
 echo -e "\nStage 3: restricting access to removed users"
-IFS= readarray existinguser <<< $(sudo ls -1 "/home/users")
+IFS= readarray existinguser <<< $(ls -1 "/home/users")
 for exuser in "${existinguser[@]}"; do
 	exuser=$(xargs <<< "$exuser")
 	indicator=0
@@ -118,13 +139,13 @@ for exuser in "${existinguser[@]}"; do
 		fi
 	done;
 	if [[ $indicator -ne 1 ]]; then
-		sudo chmod -R 070 "/home/users/$exuser"
+		chmod -R 070 "/home/users/$exuser"
 	fi
 done;
 echo "Done with removing users"
 
 echo -e "\nStage 4: restricting access to removed authors"
-IFS= readarray existingauth <<< $(sudo ls -1 "/home/authors")
+IFS= readarray existingauth <<< $(ls -1 "/home/authors")
 for exauthor in "${existingauth[@]}"; do
         exauthor=$(xargs <<< "$exauthor")
         indicator=0
@@ -136,7 +157,7 @@ for exauthor in "${existingauth[@]}"; do
                 fi
         done;
         if [[ $indicator -ne 1 ]]; then
-                sudo chmod -R 070 "/home/authors/$exauthor"
+                chmod -R 070 "/home/authors/$exauthor"
         fi
 done;
 echo "Done with removing authors"
