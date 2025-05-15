@@ -1,6 +1,6 @@
 # Sysad Task 1
 
-create a folder called /scripts
+create a folder called /scripts\n
 transfer all files into /scripts
 run masterSetup as root
 add /scripts to path using - export PATH="/scripts:$PATH"
