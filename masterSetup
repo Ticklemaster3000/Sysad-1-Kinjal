@@ -1,12 +1,16 @@
 #!/usr/bin/bash
 
 # creates the two admins which can run initUsers for further creation
+yamlloc="/scripts/Sysad-1-users.yaml"
+readarray adminarray <<< $(yq ".admins[].username" "$yamlloc")
+
 groups=("user" "admin" "author" "mod")
 for group in "${groups[@]}"; do
         groupadd "g_$group" > /dev/null 2>&1
 done;
 
 mkdir "/home/admins" > /dev/null 2>&1
+chmod 755 "/home/admins"
 for admin in "${adminarray[@]}"; do
         admin=$(xargs <<< "$admin")
         mkdir "/home/admins/$admin" > /dev/null 2>&1
@@ -47,6 +51,9 @@ chmod 640 /scripts/userpref.yaml
 
 # add cronjob for adminPanel
 (crontab -l 2>/dev/null; echo "14 15 1-7,24-31 2,5,8,11 4,6 /scripts/adminPanel") | crontab -
+
+# adding /scripts to path couldnt figure out how to do with script
+# export PATH="/scripts:$PATH" just type that in the console as root
 
 # change sudo commands using sudo visudo to allow groups to use their respective commands
 echo '%g_admin ALL=(ALL) NOPASSWD: /scripts/initUsers, /scripts/userFY, /scripts/adminPane' | sudo EDITOR='tee -a' visudo
