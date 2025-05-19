@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+groups=("users" "admins" "authors" "mods")
+
+for grp in "${groups[@]}"; do
+	readarray userarray <<< $(yq ".$grp[].username" /scripts/Sysad-1-users.yaml)
+
+	for user in "${userarray[@]}"; do
+		sudo userdel $user
+	done;
+
+	sudo rm -rf /home/$grp
+done;
