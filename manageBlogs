@@ -66,6 +66,10 @@ if [[ $flag == "-p" ]]; then
 		chown $SUDO_USER /home/authors/$SUDO_USER/blogs.yaml
 		ln -s "$filename" "/home/authors/$SUDO_USER/public/$(basename "$filename")"
 		
+		setfacl -m u:www-data:r-x "$filename"
+		setfacl -m u:www-data:--x "/home/authors/$SUDO_USER/blogs"
+		setfacl -m u:www-data:--x "/home/authors/$SUDO_USER"
+
 		setfacl -m g:g_user:r-x "$filename"
 		setfacl -m g:g_user:--x "/home/authors/$SUDO_USER/blogs"
 		setfacl -m g:g_user:--x "/home/authors/$SUDO_USER"

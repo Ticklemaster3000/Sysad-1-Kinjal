@@ -55,6 +55,11 @@ for author in "${authorarray[@]}"; do
 
 	setfacl -m g:g_user:r-x "/home/authors/$author/public"
 	setfacl -m g:g_user:--x "/home/authors/$author"
+	
+	setfacl -m u:www-data:r-x "/home/authors/$author/public"
+	setfacl -m u:www-data:--x "/home/authors/$author"
+
+	echo "127.0.0.1 ${author}.blog.in" | sudo tee -a /etc/hosts > /dev/null
 	echo "done with $author"
 done;
 
